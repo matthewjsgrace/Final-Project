@@ -1,3 +1,7 @@
+// GAME: The Survival Circuit
+// Group Members: Arthur Carvalho, Ben Trader, Matthew Grace
+// ATLS 1350 Final Project
+
 // Global Variables
 let player; // Player object
 let obstacles = []; // Array to store obstacle objects
@@ -50,13 +54,13 @@ class Car {
     this.size = 40; // Width (adjust to fit the image)
     this.speed = 8; // Movement speed
   }
-  
+
   display() {
     // Display player image
     imageMode(CENTER);
     image(carImage, this.x, this.y, this.size * 1.5, this.size); // Draw the car image
   }
-  
+
   move() {
     // Movement controls
     if (moveLeft && this.x > 30) this.x -= this.speed;
@@ -64,7 +68,7 @@ class Car {
     if (moveUp && this.y > 50) this.y -= this.speed;
     if (moveDown && this.y < height - 50) this.y += this.speed;
   }
-  
+
   update() {
     this.move();
     if (intangibilityActive) {
