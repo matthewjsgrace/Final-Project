@@ -2,113 +2,122 @@
 // Group Members: Arthur Carvalho, Ben Trader, Matthew Grace
 // ATLS 1350 Final Project
 
-// Declare variables for your images
-let carImg, coneImg, oilImg, tireImg;
-
-// Declare other game variables
-let player; // Player object
-let obstacles = []; // Array to store obstacle objects
-let powerUps = []; // Array to store power-up objects
-let lanes = []; // Array of lane x-positions
+// Global Variables
+let player;
+let obstacles = [];
+let powerUps = [];
+let lanes = [];
 let gameState = "home"; // Current game state: home, play, gameover, levelup
-let level = 1; // Current game level
-let score = 0; // Current score
-let highScore = 0; // Highest score reached
-let leaderboard = []; // Array of top player scores
-let users = []; // List of users with their passwords
+let level = 1;
+let score = 0;
+let highScore = 0;
+let leaderboard = [];
+let users = [];
+
+// Image files
+let playerCarImage;
+let oilImage;
+let tireImage;
+let coneImage;
+
+// Login State Variables
+let tempName = '';
+let playerName = '';
+let playerPassword = '';
+let enteringPassword = false;
+let nameInputActive = true;
 
 // Power-Up State
-let intangibilityTimer = 0; // Duration for intangibility
-let slowMotionTimer = 0; // Duration for slow motion
-let slowMotionActive = false; // Flag for slow motion active
-let intangibilityActive = false; // Flag for intangibility active
-let activePowerUp = null; // Currently held power-up
+let intangibilityTimer = 0;
+let slowMotionTimer = 0;
+let slowMotionActive = false;
+let intangibilityActive = false;
+let activePowerUp = null;
 
 // Transition Between Levels
-let transitionTimer = 0; // Timer for level transition
-let transitioning = false; // Flag for ongoing level transition
+let transitionTimer = 0;
+let transitioning = false;
 
 // Movement Controls
-let moveLeft = false, moveRight = false, moveUp = false, moveDown = false; // Input flags
+let moveLeft = false, moveRight = false, moveUp = false, moveDown = false;
 
-// Preload images
 function preload() {
-  carImg = loadImage("images/car.PNG"); // Player car image
-  coneImg = loadImage("images/cone.webp"); // Obstacle image (cone)
-  oilImg = loadImage("images/oil.jpg"); // Obstacle image (oil)
-  tireImg = loadImage("images/tire.PNG"); // Obstacle image (tire)
+  // Load images
+  playerCarImage = loadImage('images/car.PNG');
+  oilImage = loadImage('images/oil.jpg');
+  tireImage = loadImage('images/tire.PNG');
+  coneImage = loadImage('images/cone.webp');
 }
 
-// Setup function
 function setup() {
-  createCanvas(400, 550); // Set canvas size
-  textFont('monospace'); // Set default font
-  lanes = [60, 120, 200, 280, 340]; // Initialize 5 lanes
-  player = new Car(); // Create player car
-  generateObstacles(); // Spawn obstacles
-  generatePowerUps(); // Spawn power-ups
+  createCanvas(400, 550);
+  textFont('monospace');
+  lanes = [60, 120, 200, 280, 340];
+  player = new Car();
+  generateObstacles();
+  generatePowerUps();
 }
 
-// Car Class
+function draw() {
+  background(getLevelColor(level)); // Set background color by level
+
+  if (gameState === "home") showHomeScreen();
+  else if (gameState === "play") updateGame();
+  else if (gameState === "gameover") showGameOverScreen();
+  else if (gameState === "levelup") showLevelUpScreen();
+}
+
 class Car {
   constructor() {
-    this.x = lanes[2]; // Start in center lane
-    this.y = height - 100; // Near bottom of screen
-    this.size = 40; // Width
-    this.speed = 8; // Movement speed
+    this.x = lanes[2];
+    this.y = height - 100;
+    this.size = 40;
+    this.speed = 8;
   }
-
   display() {
-    // Display car with image
     imageMode(CENTER);
-    image(carImg, this.x, this.y, this.size, this.size * 1.5); // Draw car image
+    image(playerCarImage, this.x, this.y, this.size, this.size * 1.5);
   }
-
   move() {
-    // Movement controls
     if (moveLeft && this.x > 30) this.x -= this.speed;
     if (moveRight && this.x < width - 30) this.x += this.speed;
     if (moveUp && this.y > 50) this.y -= this.speed;
     if (moveDown && this.y < height - 50) this.y += this.speed;
   }
-
   update() {
     this.move();
     if (intangibilityActive) {
       intangibilityTimer--;
-      if (intangibilityTimer <= 0) intangibilityActive = false; // End power-up
+      if (intangibilityTimer <= 0) intangibilityActive = false;
     }
   }
 }
 
-// Obstacle Class
 class Obstacle {
   constructor(laneIndex, speed) {
     this.lane = laneIndex;
     this.x = lanes[this.lane];
-    this.y = -random(100, 1000); // Start offscreen
+    this.y = -random(100, 1000);
     this.w = random(30, 50);
     this.h = random(30, 60);
     this.speed = speed;
-    // Randomize obstacle images
-    this.image = this.randomObstacleImage();
+    this.image = this.getRandomImage(); // Randomly assign image
   }
 
-  // Randomize which image to use for the obstacle
-  randomObstacleImage() {
-    const randomNum = floor(random(3)); // Random number between 0 and 2
-    if (randomNum === 0) return oilImg;
-    if (randomNum === 1) return tireImg;
-    return coneImg;
+  getRandomImage() {
+    const randomNumber = random();
+    if (randomNumber < 0.33) return oilImage;
+    if (randomNumber < 0.66) return tireImage;
+    return coneImage;
   }
 
   display() {
     imageMode(CENTER);
-    image(this.image, this.x, this.y, this.w, this.h); // Draw the random obstacle image
+    image(this.image, this.x, this.y, this.w, this.h);
   }
 
   update() {
-    this.y += slowMotionActive ? this.speed * 0.4 : this.speed; // Adjust for slow-mo
+    this.y += slowMotionActive ? this.speed * 0.4 : this.speed;
   }
 
   hits(car) {
@@ -119,7 +128,6 @@ class Obstacle {
   }
 }
 
-// Power-Up Class (same as original)
 class PowerUp {
   constructor(type) {
     this.type = type;
@@ -149,12 +157,10 @@ class PowerUp {
   }
 }
 
-// Main Game Update Function
 function updateGame() {
   player.update();
   player.display();
 
-  // Update obstacles
   for (let obs of obstacles) {
     obs.update();
     obs.display();
@@ -173,19 +179,16 @@ function updateGame() {
     if (obs.y > height + obs.h) respawnObstacle(obs);
   }
 
-  // Update power-ups
   for (let p of powerUps) {
     p.update();
     p.display();
   }
 
-  // Handle slow-motion timer
   if (slowMotionActive) {
     slowMotionTimer--;
     if (slowMotionTimer <= 0) slowMotionActive = false;
   }
 
-  // HUD display
   fill(255);
   textSize(16);
   textAlign(LEFT);
@@ -195,7 +198,6 @@ function updateGame() {
   text(`Power-Up: ${activePowerUp ? activePowerUp.toUpperCase() : ""}`, 10, 80);
   score++;
 
-  // Check for level up
   if (score > 0 && score % 1000 === 0 && !transitioning) {
     transitioning = true;
     transitionTimer = 120;
@@ -203,7 +205,67 @@ function updateGame() {
   }
 }
 
-// Generate New Obstacles
+function showHomeScreen() {
+  textAlign(CENTER);
+  fill(255);
+  textSize(24);
+  text("The Survival Circuit", width / 2, 80);
+  textSize(16);
+
+  const userExists = users.find(u => u.name === tempName);
+
+  if (!enteringPassword) {
+    text("Enter your username:", width / 2, 130);
+    fill(200);
+    textSize(20);
+    text(tempName + (frameCount % 60 < 30 ? "|" : ""), width / 2, 160);
+    fill(255);
+    textSize(14);
+    text("Press ENTER to continue", width / 2, 200);
+  } else {
+    const prompt = userExists ? "Enter your password:" : "Create your password:";
+    text(prompt, width / 2, 130);
+    fill(200);
+    textSize(20);
+    text("*".repeat(playerPassword.length) + (frameCount % 60 < 30 ? "|" : ""), width / 2, 160);
+    fill(255);
+    textSize(14);
+    text("Press ENTER to start", width / 2, 200);
+  }
+
+  textSize(16);
+  text("Leaderboard:", width / 2, 260);
+  leaderboard.forEach((p, i) => {
+    text(`${i + 1}. ${p.name} - ${p.score}`, width / 2, 290 + i * 20);
+  });
+}
+
+function showGameOverScreen() {
+  textAlign(CENTER);
+  fill(255);
+  textSize(32);
+  text("GAME OVER", width / 2, 160);
+  textSize(16);
+  text(`Score: ${score}`, width / 2, 210);
+  text(`High Score: ${highScore}`, width / 2, 240);
+  text(`Press "R" to return to the home page`, width / 2, 280);
+}
+
+function showLevelUpScreen() {
+  fill(255);
+  textAlign(CENTER);
+  textSize(30);
+  text(`LEVEL ${level + 1}`, width / 2, height / 2);
+  transitionTimer--;
+  if (transitionTimer <= 0) {
+    level++;
+    generateObstacles();
+    generatePowerUps();
+    gameState = "play";
+    transitioning = false;
+  }
+}
+
 function generateObstacles() {
   obstacles = [];
   while (obstacles.length < 6 + level * 2) {
@@ -214,7 +276,6 @@ function generateObstacles() {
   }
 }
 
-// Generate New PowerUps
 function generatePowerUps() {
   powerUps = [];
   while (powerUps.length < 2) {
@@ -224,7 +285,6 @@ function generatePowerUps() {
   }
 }
 
-// Recycle Obstacle to Top
 function respawnObstacle(obs) {
   let tries = 0;
   do {
@@ -238,7 +298,6 @@ function respawnObstacle(obs) {
   } while (obstacles.some(o => o !== obs && dist(o.x, o.y, obs.x, obs.y) < 60) && tries < 10);
 }
 
-// Keyboard Input Handling (same as original)
 function keyPressed() {
   if (gameState === "home") {
     if (!enteringPassword) {
@@ -273,13 +332,11 @@ function keyPressed() {
     }
   }
 
-  // Handle restart after game over
   if (gameState === "gameover" && (key === 'r' || key === 'R')) {
     gameState = "home";
     resetLogin();
   }
 
-  // In-game movement and power-up use
   if (gameState === "play") {
     if (key === 'a' || keyCode === LEFT_ARROW) moveLeft = true;
     if (key === 'd' || keyCode === RIGHT_ARROW) moveRight = true;
@@ -299,7 +356,6 @@ function keyPressed() {
   }
 }
 
-// Reset movement when keys released
 function keyReleased() {
   if (key === 'a' || keyCode === LEFT_ARROW) moveLeft = false;
   if (key === 'd' || keyCode === RIGHT_ARROW) moveRight = false;
@@ -307,7 +363,6 @@ function keyReleased() {
   if (key === 's' || keyCode === DOWN_ARROW) moveDown = false;
 }
 
-// Called when login is successful
 function loginSuccess() {
   playerName = tempName;
   tempName = '';
@@ -321,7 +376,6 @@ function loginSuccess() {
   generatePowerUps();
 }
 
-// Reset all login-related variables
 function resetLogin() {
   tempName = '';
   playerName = '';
@@ -330,7 +384,6 @@ function resetLogin() {
   nameInputActive = true;
 }
 
-// Returns background color based on level
 function getLevelColor(lvl) {
   let colors = [
     color(80, 180, 255),
