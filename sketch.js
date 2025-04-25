@@ -3,96 +3,82 @@
 // ATLS 1350 Final Project
 
 // Global Variables
-let player; // Player object
-let obstacles = []; // Array to store obstacle objects
-let powerUps = []; // Array to store power-up objects
-let lanes = []; // Array of lane x-positions
+let player;
+let obstacles = [];
+let powerUps = [];
+let lanes = [];
 let gameState = "home"; // Current game state: home, play, gameover, levelup
-let level = 1; // Current game level
-let score = 0; // Current score
-let highScore = 0; // Highest score reached
-let leaderboard = []; // Array of top player scores
-let users = []; // List of users with their passwords
+let level = 1;
+let score = 0;
+let highScore = 0;
+let leaderboard = [];
+let users = [];
+
+// Image files
+let playerCarImage;
+let oilImage;
+let tireImage;
+let coneImage;
 
 // Login State Variables
-let tempName = ''; // Input for new or returning username
-let playerName = ''; // Finalized username
-let playerPassword = ''; // Password input
-let enteringPassword = false; // Flag for password entry mode
-let nameInputActive = true; // Cursor blinking on username input
+let tempName = '';
+let playerName = '';
+let playerPassword = '';
+let enteringPassword = false;
+let nameInputActive = true;
 
 // Power-Up State
-let intangibilityTimer = 0; // Duration for intangibility
-let slowMotionTimer = 0; // Duration for slow motion
-let slowMotionActive = false; // Flag for slow motion active
-let intangibilityActive = false; // Flag for intangibility active
-let activePowerUp = null; // Currently held power-up
+let intangibilityTimer = 0;
+let slowMotionTimer = 0;
+let slowMotionActive = false;
+let intangibilityActive = false;
+let activePowerUp = null;
 
 // Transition Between Levels
-let transitionTimer = 0; // Timer for level transition
-let transitioning = false; // Flag for ongoing level transition
+let transitionTimer = 0;
+let transitioning = false;
 
 // Movement Controls
-let moveLeft = false, moveRight = false, moveUp = false, moveDown = false; // Input flags
+let moveLeft = false, moveRight = false, moveUp = false, moveDown = false;
 
-// SETUP
-function setup() {
-  createCanvas(400, 550); // Set canvas size
-  textFont('monospace'); // Set default font
-  lanes = [60, 120, 200, 280, 340]; // Initialize 5 lanes
-  player = new Car(); // Create player car
-  generateObstacles(); // Spawn obstacles
-  generatePowerUps(); // Spawn power-ups
+function preload() {
+  // Load images
+  playerCarImage = loadImage('images/car.PNG');
+  oilImage = loadImage('images/oil.PNG');
+  tireImage = loadImage('images/tire.PNG');
+  coneImage = loadImage('images/cone.webp');
 }
 
-// DRAW LOOP
+function setup() {
+  createCanvas(400, 550);
+  textFont('monospace');
+  lanes = [60, 120, 200, 280, 340];
+  player = new Car();
+  generateObstacles();
+  generatePowerUps();
+}
+
 function draw() {
-  background(getLevelColor(level)); // Set the background color for the level
+  background(getLevelColor(level)); // Set background color by level
 
-  // Draw checkered pattern on the left side
-  drawCheckeredPattern(0);
-
-  // Draw checkered pattern on the right side
-  drawCheckeredPattern(width - 50);
-
-  // Display the game screen based on the game state
   if (gameState === "home") showHomeScreen();
   else if (gameState === "play") updateGame();
   else if (gameState === "gameover") showGameOverScreen();
   else if (gameState === "levelup") showLevelUpScreen();
 }
 
-// Function to draw the checkered pattern
-function drawCheckeredPattern(xOffset) {
-  let squareSize = 25; // Size of each square in the checkered pattern
-  for (let y = 0; y < height; y += squareSize) {
-    for (let x = xOffset; x < xOffset + 50; x += squareSize) {
-      // Alternate between red and white squares
-      if ((x + y) % (squareSize * 2) === 0) {
-        fill(255, 0, 0); // Red
-      } else {
-        fill(255); // White
-      }
-      rect(x, y, squareSize, squareSize); // Draw square
-    }
-  }
-}
-
-// Car Class
 class Car {
   constructor() {
-    this.x = lanes[2]; // Start in center lane
-    this.y = height - 100; // Near bottom of screen
-    this.size = 40; // Width
-    this.speed = 8; // Movement speed
+    this.x = lanes[2];
+    this.y = height - 100;
+    this.size = 40;
+    this.speed = 8;
   }
   display() {
-    fill(intangibilityActive ? color(0, 255, 255) : color(255, 0, 0)); // Cyan when intangible
-    rectMode(CENTER);
-    rect(this.x, this.y, this.size, this.size * 1.5); // Draw car
+    imageMode(CENTER);
+    image(playerCarImage, this.x, this.y, this.size, this.size * 1.5);
   }
   move() {
-    // Movement controls
     if (moveLeft && this.x > 30) this.x -= this.speed;
     if (moveRight && this.x < width - 30) this.x += this.speed;
     if (moveUp && this.y > 50) this.y -= this.speed;
@@ -102,34 +88,38 @@ class Car {
     this.move();
     if (intangibilityActive) {
       intangibilityTimer--;
-      if (intangibilityTimer <= 0) intangibilityActive = false; // End power-up
+      if (intangibilityTimer <= 0) intangibilityActive = false;
     }
   }
 }
 
-// Obstacle Class
 class Obstacle {
-  constructor(laneIndex, speed, img) {
+  constructor(laneIndex, speed) {
     this.lane = laneIndex;
     this.x = lanes[this.lane];
-    this.y = -random(100, 1000); // Start offscreen
+    this.y = -random(100, 1000);
     this.w = random(30, 50);
     this.h = random(30, 60);
     this.speed = speed;
-    this.img = img; // Add image property
+    this.image = this.getRandomImage(); // Randomly assign image
   }
+
+  getRandomImage() {
+    const randomNumber = random();
+    if (randomNumber < 0.33) return oilImage;
+    if (randomNumber < 0.66) return tireImage;
+    return coneImage;
+  }
+
   display() {
-    if (this.img) {
-      image(this.img, this.x - this.w / 2, this.y - this.h / 2, this.w, this.h); // Draw image obstacle
-    } else {
-      fill(0); // If no image, fallback to drawing black rectangle
-      rectMode(CENTER);
-      rect(this.x, this.y, this.w, this.h); // Draw obstacle
-    }
+    imageMode(CENTER);
+    image(this.image, this.x, this.y, this.w, this.h);
   }
+
   update() {
-    this.y += slowMotionActive ? this.speed * 0.4 : this.speed; // Adjust for slow-mo
+    this.y += slowMotionActive ? this.speed * 0.4 : this.speed;
   }
+
   hits(car) {
     return (
       abs(this.x - car.x) < (this.w + car.size) / 2 &&
@@ -138,7 +128,6 @@ class Obstacle {
   }
 }
 
-// Power-Up Class
 class PowerUp {
   constructor(type) {
     this.type = type;
@@ -168,12 +157,10 @@ class PowerUp {
   }
 }
 
-// Main Game Update Function
 function updateGame() {
   player.update();
   player.display();
 
-  // Update obstacles
   for (let obs of obstacles) {
     obs.update();
     obs.display();
@@ -192,19 +179,16 @@ function updateGame() {
     if (obs.y > height + obs.h) respawnObstacle(obs);
   }
 
-  // Update power-ups
   for (let p of powerUps) {
     p.update();
     p.display();
   }
 
-  // Handle slow-motion timer
   if (slowMotionActive) {
     slowMotionTimer--;
     if (slowMotionTimer <= 0) slowMotionActive = false;
   }
 
-  // HUD display
   fill(255);
   textSize(16);
   textAlign(LEFT);
@@ -214,7 +198,6 @@ function updateGame() {
   text(`Power-Up: ${activePowerUp ? activePowerUp.toUpperCase() : ""}`, 10, 80);
   score++;
 
-  // Check for level up
   if (score > 0 && score % 1000 === 0 && !transitioning) {
     transitioning = true;
     transitionTimer = 120;
@@ -222,7 +205,6 @@ function updateGame() {
   }
 }
 
-// Show Home/Login Screen
 function showHomeScreen() {
   textAlign(CENTER);
   fill(255);
@@ -251,7 +233,6 @@ function showHomeScreen() {
     text("Press ENTER to start", width / 2, 200);
   }
 
-  // Display leaderboard
   textSize(16);
   text("Leaderboard:", width / 2, 260);
   leaderboard.forEach((p, i) => {
@@ -259,7 +240,6 @@ function showHomeScreen() {
   });
 }
 
-// Show Game Over Screen
 function showGameOverScreen() {
   textAlign(CENTER);
   fill(255);
@@ -268,10 +248,9 @@ function showGameOverScreen() {
   textSize(16);
   text(`Score: ${score}`, width / 2, 210);
   text(`High Score: ${highScore}`, width / 2, 240);
-  text(`Press \"R\" to return to the home page`, width / 2, 280);
+  text(`Press "R" to return to the home page`, width / 2, 280);
 }
 
-// Level Up Screen Placeholder
 function showLevelUpScreen() {
   fill(255);
   textAlign(CENTER);
@@ -287,19 +266,16 @@ function showLevelUpScreen() {
   }
 }
 
-// Generate New Obstacles
 function generateObstacles() {
   obstacles = [];
-  let obstacleImages = [loadImage("images/oil.jpg"), loadImage("images/tire.PNG"), loadImage("images/cone.webp")];
   while (obstacles.length < 6 + level * 2) {
     let lane = floor(random(lanes.length));
-    let newObs = new Obstacle(lane, random(2 + level * 0.2, 4 + level * 0.3), random(obstacleImages));
+    let newObs = new Obstacle(lane, random(2 + level * 0.2, 4 + level * 0.3));
     let overlaps = obstacles.some(o => dist(o.x, o.y, newObs.x, newObs.y) < 60);
     if (!overlaps) obstacles.push(newObs);
   }
 }
 
-// Generate New PowerUps
 function generatePowerUps() {
   powerUps = [];
   while (powerUps.length < 2) {
@@ -309,7 +285,6 @@ function generatePowerUps() {
   }
 }
 
-// Recycle Obstacle to Top
 function respawnObstacle(obs) {
   let tries = 0;
   do {
@@ -323,7 +298,6 @@ function respawnObstacle(obs) {
   } while (obstacles.some(o => o !== obs && dist(o.x, o.y, obs.x, obs.y) < 60) && tries < 10);
 }
 
-// Keyboard Input Handling
 function keyPressed() {
   if (gameState === "home") {
     if (!enteringPassword) {
@@ -358,13 +332,11 @@ function keyPressed() {
     }
   }
 
-  // Handle restart after game over
   if (gameState === "gameover" && (key === 'r' || key === 'R')) {
     gameState = "home";
     resetLogin();
   }
 
-  // In-game movement and power-up use
   if (gameState === "play") {
     if (key === 'a' || keyCode === LEFT_ARROW) moveLeft = true;
     if (key === 'd' || keyCode === RIGHT_ARROW) moveRight = true;
@@ -384,7 +356,6 @@ function keyPressed() {
   }
 }
 
-// Reset movement when keys released
 function keyReleased() {
   if (key === 'a' || keyCode === LEFT_ARROW) moveLeft = false;
   if (key === 'd' || keyCode === RIGHT_ARROW) moveRight = false;
@@ -392,7 +363,6 @@ function keyReleased() {
   if (key === 's' || keyCode === DOWN_ARROW) moveDown = false;
 }
 
-// Called when login is successful
 function loginSuccess() {
   playerName = tempName;
   tempName = '';
@@ -406,7 +376,6 @@ function loginSuccess() {
   generatePowerUps();
 }
 
-// Reset all login-related variables
 function resetLogin() {
   tempName = '';
   playerName = '';
@@ -415,7 +384,6 @@ function resetLogin() {
   nameInputActive = true;
 }
 
-// Returns background color based on leveL
 function getLevelColor(lvl) {
   let colors = [
     color(80, 180, 255),
