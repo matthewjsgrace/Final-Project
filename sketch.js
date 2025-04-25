@@ -44,7 +44,7 @@ let moveLeft = false, moveRight = false, moveUp = false, moveDown = false;
 function preload() {
   // Load images
   playerCarImage = loadImage('images/car.PNG');
-  oilImage = loadImage('images/oil.jpg');
+  oilImage = loadImage('images/oil.PNG');
   tireImage = loadImage('images/tire.PNG');
   coneImage = loadImage('images/cone.webp');
 }
