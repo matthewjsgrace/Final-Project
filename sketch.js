@@ -52,11 +52,7 @@ function preload() {
 function setup() {
   createCanvas(500, 700);
   textFont('monospace');
-  
-  // Dynamically calculate lane positions to make them evenly spaced
-  let laneWidth = width / 6;  // 6 sections, 5 lanes in the middle
-  lanes = [laneWidth, laneWidth * 2, laneWidth * 3, laneWidth * 4, laneWidth * 5];  // Creating 5 lanes
-
+  lanes = [60, 120, 200, 280, 340];
   player = new Car();
   generateObstacles();
   generatePowerUps();
@@ -69,44 +65,37 @@ function draw() {
   else if (gameState === "play") updateGame();
   else if (gameState === "gameover") showGameOverScreen();
   else if (gameState === "levelup") showLevelUpScreen();
-
-  drawRoad();  // Draw the road in the background (new function)
 }
 
-function drawRoad() {
-  // Draw the dashed lane lines
-  stroke(255);
-  strokeWeight(4);
-  for (let i = 1; i < lanes.length; i++) {
-    let xPos = lanes[i];
-    for (let y = 0; y < height; y += 30) {  // Draw dashed lines every 30px vertically
-      line(xPos, y, xPos, y + 15);  // Adjust the vertical position for the dash
+// Function to draw the checkered pattern
+function drawCheckeredPattern(xOffset) {
+  let squareSize = 25;
+  for (let y = 0; y < height; y += squareSize) {
+    for (let x = xOffset; x < xOffset + 50; x += squareSize) {
+      if ((x + y) % (squareSize * 2) === 0) {
+        fill(255, 0, 0); // Red
+      } else {
+        fill(255); // White
+      }
+      rect(x, y, squareSize, squareSize);
     }
   }
-  
-  // Draw checkered pattern on the sides
-  fill(255, 0, 0);
-  for (let y = 0; y < height; y += 40) {
-    rect(0, y, 40, 40);  // Left side
-    rect(width - 40, y, 40, 40);  // Right side
-  }
 }
 
-// Car Class
 class Car {
   constructor() {
-    this.x = lanes[2];  // Start in center lane
-    this.y = height - 100; // Near bottom of screen
-    this.size = 80;  // Width
-    this.speed = 8;  // Movement speed
+    this.x = lanes[2];
+    this.y = height - 100;
+    this.size = 80;
+    this.speed = 8;
   }
   display() {
     imageMode(CENTER);
-    image(playerCarImage, this.x, this.y, this.size, this.size * 1.5);  // Display car image
+    image(playerCarImage, this.x, this.y, this.size, this.size * 1.5);
   }
   move() {
-    if (moveLeft && this.x > lanes[0] + this.size / 2) this.x -= this.speed;
-    if (moveRight && this.x < lanes[lanes.length - 1] - this.size / 2) this.x += this.speed;
+    if (moveLeft && this.x > 30) this.x -= this.speed;
+    if (moveRight && this.x < width - 30) this.x += this.speed;
     if (moveUp && this.y > 50) this.y -= this.speed;
     if (moveDown && this.y < height - 50) this.y += this.speed;
   }
@@ -114,17 +103,16 @@ class Car {
     this.move();
     if (intangibilityActive) {
       intangibilityTimer--;
-      if (intangibilityTimer <= 0) intangibilityActive = false;  // End power-up
+      if (intangibilityTimer <= 0) intangibilityActive = false;
     }
   }
 }
 
-// Obstacle Class
 class Obstacle {
   constructor(laneIndex, speed) {
     this.lane = laneIndex;
     this.x = lanes[this.lane];
-    this.y = -random(100, 1000); // Start offscreen
+    this.y = -random(100, 1000);
     this.w = random(30, 50);
     this.h = random(30, 60);
     this.speed = speed;
@@ -144,7 +132,7 @@ class Obstacle {
   }
 
   update() {
-    this.y += slowMotionActive ? this.speed * 0.4 : this.speed;  // Adjust for slow-mo
+    this.y += slowMotionActive ? this.speed * 0.4 : this.speed;
   }
 
   hits(car) {
@@ -155,7 +143,6 @@ class Obstacle {
   }
 }
 
-// Power-Up Class
 class PowerUp {
   constructor(type) {
     this.type = type;
@@ -185,12 +172,10 @@ class PowerUp {
   }
 }
 
-// Main Game Update Function
 function updateGame() {
   player.update();
   player.display();
 
-  // Update obstacles
   for (let obs of obstacles) {
     obs.update();
     obs.display();
@@ -209,19 +194,16 @@ function updateGame() {
     if (obs.y > height + obs.h) respawnObstacle(obs);
   }
 
-  // Update power-ups
   for (let p of powerUps) {
     p.update();
     p.display();
   }
 
-  // Handle slow-motion timer
   if (slowMotionActive) {
     slowMotionTimer--;
     if (slowMotionTimer <= 0) slowMotionActive = false;
   }
 
-  // HUD display
   fill(255);
   textSize(16);
   textAlign(LEFT);
@@ -231,7 +213,6 @@ function updateGame() {
   text(`Power-Up: ${activePowerUp ? activePowerUp.toUpperCase() : ""}`, 10, 80);
   score++;
 
-  // Check for level up
   if (score > 0 && score % 1000 === 0 && !transitioning) {
     transitioning = true;
     transitionTimer = 120;
@@ -239,7 +220,6 @@ function updateGame() {
   }
 }
 
-// Show Home/Login Screen
 function showHomeScreen() {
   textAlign(CENTER);
   fill(255);
@@ -268,7 +248,6 @@ function showHomeScreen() {
     text("Press ENTER to start", width / 2, 200);
   }
 
-  // Display leaderboard
   textSize(16);
   text("Leaderboard:", width / 2, 260);
   leaderboard.forEach((p, i) => {
@@ -276,7 +255,6 @@ function showHomeScreen() {
   });
 }
 
-// Show Game Over Screen
 function showGameOverScreen() {
   textAlign(CENTER);
   fill(255);
@@ -288,7 +266,6 @@ function showGameOverScreen() {
   text(`Press "R" to return to the home page`, width / 2, 280);
 }
 
-// Level Up Screen Placeholder
 function showLevelUpScreen() {
   fill(255);
   textAlign(CENTER);
@@ -304,7 +281,6 @@ function showLevelUpScreen() {
   }
 }
 
-// Generate New Obstacles
 function generateObstacles() {
   obstacles = [];
   while (obstacles.length < 6 + level * 2) {
@@ -315,7 +291,6 @@ function generateObstacles() {
   }
 }
 
-// Generate New PowerUps
 function generatePowerUps() {
   powerUps = [];
   while (powerUps.length < 2) {
@@ -325,7 +300,6 @@ function generatePowerUps() {
   }
 }
 
-// Recycle Obstacle to Top
 function respawnObstacle(obs) {
   let tries = 0;
   do {
@@ -339,7 +313,6 @@ function respawnObstacle(obs) {
   } while (obstacles.some(o => o !== obs && dist(o.x, o.y, obs.x, obs.y) < 60) && tries < 10);
 }
 
-// Keyboard Input Handling
 function keyPressed() {
   if (gameState === "home") {
     if (!enteringPassword) {
@@ -398,7 +371,6 @@ function keyPressed() {
   }
 }
 
-// Reset movement when keys released
 function keyReleased() {
   if (key === 'a' || keyCode === LEFT_ARROW) moveLeft = false;
   if (key === 'd' || keyCode === RIGHT_ARROW) moveRight = false;
@@ -406,7 +378,6 @@ function keyReleased() {
   if (key === 's' || keyCode === DOWN_ARROW) moveDown = false;
 }
 
-// Called when login is successful
 function loginSuccess() {
   playerName = tempName;
   tempName = '';
@@ -420,7 +391,6 @@ function loginSuccess() {
   generatePowerUps();
 }
 
-// Reset all login-related variables
 function resetLogin() {
   tempName = '';
   playerName = '';
@@ -429,7 +399,6 @@ function resetLogin() {
   nameInputActive = true;
 }
 
-// Returns background color based on leveL
 function getLevelColor(lvl) {
   let colors = [
     color(80, 180, 255),
@@ -440,3 +409,6 @@ function getLevelColor(lvl) {
   ];
   return colors[(lvl - 1) % colors.length];
 }
+
+
+This is the current code, can you add to it 5 even lanes (make it look like it's actually driving down the highway)
