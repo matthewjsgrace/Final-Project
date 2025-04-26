@@ -50,7 +50,7 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(400, 550);
+  createCanvas(500, 650);
   textFont('monospace');
   lanes = [60, 120, 200, 280, 340];
   player = new Car();
