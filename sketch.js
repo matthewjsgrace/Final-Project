@@ -50,7 +50,7 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(500, 650);
+  createCanvas(600, 750);
   textFont('monospace');
   lanes = [60, 120, 200, 280, 340];
   player = new Car();
@@ -71,7 +71,7 @@ class Car {
   constructor() {
     this.x = lanes[2];
     this.y = height - 100;
-    this.size = 100;
+    this.size = 90;
     this.speed = 8;
   }
   display() {
