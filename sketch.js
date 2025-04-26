@@ -52,7 +52,7 @@ function preload() {
 function setup() {
   createCanvas(500, 700);
   textFont('monospace');
-  lanes = [60, 120, 200, 280, 340]; // 5 lane positions
+  lanes = [60, 120, 200, 280, 340];
   player = new Car();
   generateObstacles();
   generatePowerUps();
@@ -60,13 +60,6 @@ function setup() {
 
 function draw() {
   background(getLevelColor(level)); // Set background color by level
-  
-  // Draw the lanes
-  drawLanes();
-
-  // Draw the checkered pattern on the left and right side
-  drawCheckeredPattern(0);
-  drawCheckeredPattern(width - 50);
 
   if (gameState === "home") showHomeScreen();
   else if (gameState === "play") updateGame();
@@ -74,40 +67,9 @@ function draw() {
   else if (gameState === "levelup") showLevelUpScreen();
 }
 
-// Function to draw lanes
-function drawLanes() {
-  stroke(255);
-  strokeWeight(4);
-
-  // Draw lane dividers (5 lanes in total)
-  for (let i = 0; i < lanes.length; i++) {
-    let laneX = lanes[i];
-    // Draw the dashed lines for lanes
-    for (let y = -height; y < height; y += 40) {
-      line(laneX, y, laneX, y + 20); // Short vertical lines to simulate dashed lanes
-    }
-  }
-}
-
-// Function to draw the checkered pattern
-function drawCheckeredPattern(xOffset) {
-  let squareSize = 25;
-  for (let y = 0; y < height; y += squareSize) {
-    for (let x = xOffset; x < xOffset + 50; x += squareSize) {
-      if ((x + y) % (squareSize * 2) === 0) {
-        fill(255, 0, 0); // Red
-      } else {
-        fill(255); // White
-      }
-      rect(x, y, squareSize, squareSize);
-    }
-  }
-}
-
-// Car Class
 class Car {
   constructor() {
-    this.x = lanes[2]; // Start in center lane
+    this.x = lanes[2];
     this.y = height - 100;
     this.size = 80;
     this.speed = 8;
@@ -432,3 +394,6 @@ function getLevelColor(lvl) {
   ];
   return colors[(lvl - 1) % colors.length];
 }
+
+
+This is the current code, can you add to it 5 even lanes (make it look like it's actually driving down the highway)
