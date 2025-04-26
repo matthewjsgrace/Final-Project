@@ -67,21 +67,6 @@ function draw() {
   else if (gameState === "levelup") showLevelUpScreen();
 }
 
-// Function to draw the checkered pattern
-function drawCheckeredPattern(xOffset) {
-  let squareSize = 25;
-  for (let y = 0; y < height; y += squareSize) {
-    for (let x = xOffset; x < xOffset + 50; x += squareSize) {
-      if ((x + y) % (squareSize * 2) === 0) {
-        fill(255, 0, 0); // Red
-      } else {
-        fill(255); // White
-      }
-      rect(x, y, squareSize, squareSize);
-    }
-  }
-}
-
 class Car {
   constructor() {
     this.x = lanes[2];
