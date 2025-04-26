@@ -71,7 +71,7 @@ class Car {
   constructor() {
     this.x = lanes[2];
     this.y = height - 100;
-    this.size = 60;
+    this.size = 150;
     this.speed = 8;
   }
   display() {
