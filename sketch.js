@@ -133,7 +133,7 @@ class PowerUp {
     this.type = type;
     this.x = random(lanes);
     this.y = -random(300, 1000);
-    this.size = 25;
+    this.size = 35;
     this.collected = false;
   }
   display() {
