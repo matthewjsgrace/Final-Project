@@ -395,5 +395,3 @@ function getLevelColor(lvl) {
   return colors[(lvl - 1) % colors.length];
 }
 
-
-This is the current code, can you add to it 5 even lanes (make it look like it's actually driving down the highway)
