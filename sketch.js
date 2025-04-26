@@ -61,6 +61,12 @@ function setup() {
 function draw() {
   background(getLevelColor(level)); // Set background color by level
 
+    // Draw checkered pattern on the left side
+  drawCheckeredPattern(0);
+
+  // Draw checkered pattern on the right side
+  drawCheckeredPattern(width - 50);
+  
   if (gameState === "home") showHomeScreen();
   else if (gameState === "play") updateGame();
   else if (gameState === "gameover") showGameOverScreen();
